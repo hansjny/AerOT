@@ -640,32 +640,52 @@ void Protocol76::parseDebug(NetworkMessage &msg)
 void Protocol76::parseMoveByMouse(NetworkMessage &msg)
 {
 	// first we get all directions...
-	std::list<Direction> path;
 	size_t numdirs = msg.GetByte();
-	for (size_t i = 0; i < numdirs; ++i) {
+	if(numdirs == 0 || (msg.getMessagePosition() + numdirs) != (msg.getMessageLength() + 4)) {
+        return;
+    }
+
+	std::list<Direction> path;
+
+	for(size_t i = 0; i < numdirs; ++i){
 		unsigned char rawdir = msg.GetByte();
 		Direction dir = SOUTH;
 
-		switch(rawdir) {
-		case 1: dir = EAST; break;
-		case 2: dir = NORTHEAST; break;
-		case 3: dir = NORTH; break;
-		case 4: dir = NORTHWEST; break;
-		case 5: dir = WEST; break;
-		case 6: dir = SOUTHWEST; break;
-		case 7: dir = SOUTH; break;
-		case 8: dir = SOUTHEAST; break;
+		switch(rawdir){
+			case 1:
+            	dir = EAST;
+            	break;
+			case 2: 
+                 dir = NORTHEAST; 
+                 break;
+			case 3: 
+                 dir = NORTH; 
+                 break;
+			case 4: 
+                 dir = NORTHWEST; 
+                 break;
+			case 5: 
+                 dir = WEST; 
+                 break;
+			case 6: 
+                 dir = SOUTHWEST; 
+                 break;
+			case 7: 
+                 dir = SOUTH; 
+                 break;
+			case 8: 
+                 dir = SOUTHEAST; 
+                 break;
 
-		default:
-			continue;
+    		default:
+    			break;
 		};
 
-		/*
-		#ifdef __DEBUG__
-		std::cout << "Walk by mouse: Direction: " << dir << std::endl;
-		#endif
-		*/
 		path.push_back(dir);
+	}
+
+	if(path.empty()){
+		return;
 	}
 
 	game->playerAutoWalk(player, path);
@@ -1186,12 +1206,11 @@ void Protocol76::parseThrow(NetworkMessage &msg)
 	unsigned short to_y       = msg.GetU16();
 	unsigned char  to_z       = msg.GetByte();
 	unsigned char count       = msg.GetByte();
-	/*
-	std::cout << "parseThrow: " << "from_x: " << (int)from_x << ", from_y: " << (int)from_y
-	<<  ", from_z: " << (int)from_z << ", item: " << (int)itemid << ", from_stack: "
-	<< (int)from_stack << " to_x: " << (int)to_x << ", to_y: " << (int)to_y
-	<<  ", to_z: " << (int)to_z
-	<< ", count: " << (int)count << std::endl;*/
+
+	if(itemid != 0 && count <= 0){
+		return;
+	}
+	
 	bool toInventory = false;
 	bool fromInventory = false;
 
